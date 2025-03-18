@@ -1,0 +1,190 @@
+import streamlit as st
+import os
+import hashlib
+import torch
+import torchaudio
+from pydub import AudioSegment
+import io
+import whisper
+from speechbrain.inference import EncoderClassifier
+from difflib import SequenceMatcher
+from pinyin_pro import pinyin  # 新增拼音转换库
+
+# ================== 视频流式播放模块 ==================
+def video_player():
+    """在页面顶部自动播放引导视频"""
+    try:
+        # 播放本地MP4文件（需静音自动播放）
+        with open("./video/nezha2.mp4", "rb") as f:
+            video_bytes = f.read()
+            st.video(video_bytes, 
+                    autoplay=True, 
+                    muted=True,  # 绕过浏览器自动播放限制
+                    start_time=0,
+                    format="video/mp4")
+    except FileNotFoundError:
+        st.warning("引导视频未找到，请检查文件路径")
+
+# ================== 核心功能模块 ==================
+@st.cache_resource
+def load_models():
+    """加载语音处理模型"""
+    spk_classifier = EncoderClassifier.from_hparams(
+        source="speechbrain/spkrec-ecapa-voxceleb",
+        savedir="pretrained_models"
+    )
+    
+    # 预加载基准声纹
+    base_signal, fs = torchaudio.load(BASE_AUDIO_PATH)
+    if fs != 16000:
+        base_signal = torchaudio.functional.resample(base_signal, fs, 16000)
+    base_emb = spk_classifier.encode_batch(base_signal).squeeze(0).flatten()
+    
+    return spk_classifier, whisper.load_model("base"), base_emb
+
+def pinyin_compare(target, transcript):
+    """增强版拼音对比功能"""
+    # 转换为无音调拼音数组
+    target_py = pinyin(target, tonetype='none', type='array')
+    trans_py = pinyin(transcript, tonetype='none', type='array')
+    
+    # 计算两种相似度
+    char_sim = SequenceMatcher(None, target, transcript).ratio()
+    pinyin_sim = SequenceMatcher(None, "".join(target_py), "".join(trans_py)).ratio()
+    
+    return {
+        "characters": char_sim,
+        "pinyin": pinyin_sim,
+        "target_py": " ".join(target_py),
+        "trans_py": " ".join(trans_py)
+    }
+
+# ================== 主程序 ==================
+if __name__ == "__main__":
+    # 配置参数
+    MAX_FILE_SIZE = 10 * 1024 * 1024
+    TEMP_DIR = "./temp_uploads"
+    BASE_AUDIO_PATH = "./video/仙翁纯享.mp3"
+    TARGET_TEXT = "网络安全防护重于泰山"
+    os.makedirs(TEMP_DIR, exist_ok=True)
+
+    # 初始化界面
+    st.set_page_config(page_title="CTF声纹验证系统", layout="wide")
+    
+    # 顶部视频播放
+    video_player()
+    
+    # 主标题
+    st.title("CTF声纹验证系统 v5.0")
+    
+    # 素材下载区
+    with st.expander("🔽 验证素材下载"):
+        col1, col2 = st.columns(2)
+        with col1:
+            with open("./video/nezha2.mp4", "rb") as f:
+                st.download_button("下载哪吒素材", f, "nezha2.mp4", "video/mp4")
+        with col2:
+            with open(BASE_AUDIO_PATH, "rb") as f:
+                st.download_button("下载基准音频", f, "仙翁纯享.mp3", "audio/mpeg")
+
+    # 加载模型
+    spk_model, asr_model, BASE_EMBEDDING = load_models()
+
+    # 验证表单
+    with st.form("verify_form"):
+        uploaded_file = st.file_uploader("上传验证语音", type=["mp3", "wav"])
+        
+        if st.form_submit_button("开始验证"):
+            if not uploaded_file:
+                st.warning("请上传语音文件")
+                st.stop()
+                
+            if uploaded_file.size > MAX_FILE_SIZE:
+                st.error("文件大小超过10MB限制")
+                st.stop()
+
+            try:
+                # 预处理音频
+                conv_path = os.path.join(TEMP_DIR, f"temp_{hashlib.md5(uploaded_file.getvalue()).hexdigest()}.wav")
+                AudioSegment.from_file(io.BytesIO(uploaded_file.getvalue()))\
+                    .set_frame_rate(16000)\
+                    .set_channels(1)\
+                    .export(conv_path, format="wav")
+
+                # 并行处理验证流程
+                col1, col2 = st.columns(2)
+                results = {}
+                
+                with col1:
+                    with st.spinner("🔍 声纹分析中..."):
+                        signal, fs = torchaudio.load(conv_path)
+                        if fs != 16000:
+                            signal = torchaudio.functional.resample(signal, fs, 16000)
+                        user_emb = spk_model.encode_batch(signal).squeeze(0).flatten()
+                        results["voice_sim"] = torch.nn.functional.cosine_similarity(
+                            BASE_EMBEDDING.unsqueeze(0), 
+                            user_emb.unsqueeze(0), 
+                            dim=1
+                        ).item()
+                
+                with col2:
+                    with st.spinner("🔤 内容识别中..."):
+                        transcript = asr_model.transcribe(
+                            conv_path,
+                            language="zh",
+                            initial_prompt="以下是标准普通话句子"
+                        )["text"].strip()
+                        results.update(pinyin_compare(TARGET_TEXT, transcript))
+
+                # 展示验证结果
+                st.subheader("验证结果")
+                
+                # 声纹验证部分
+                with st.expander("🗣️ 声纹验证详情"):
+                    col_a, col_b = st.columns(2)
+                    with col_a:
+                        st.metric("声纹相似度", 
+                                f"{results['voice_sim']:.2%}",
+                                delta="≥85%" if results['voice_sim'] >= 0.85 else None)
+                    with col_b:
+                        st.plotly_chart(px.bar(
+                            x=["相似度"],
+                            y=[results['voice_sim']],
+                            range_y=[0, 1],
+                            title="声纹匹配度可视化"
+                        ))
+                
+                # 文本验证部分
+                with st.expander("📝 文本验证详情"):
+                    tab1, tab2, tab3 = st.tabs(["原始对比", "拼音对比", "相似度分析"])
+                    
+                    with tab1:
+                        st.write(f"**目标文本**: {TARGET_TEXT}")
+                        st.write(f"**识别结果**: {transcript}")
+                        st.code(f"字符匹配度: {results['characters']:.2%}")
+                    
+                    with tab2:
+                        st.write(f"**目标拼音**: {results['target_py']}")
+                        st.write(f"**识别拼音**: {results['trans_py']}")
+                        st.code(f"拼音匹配度: {results['pinyin']:.2%}")
+                    
+                    with tab3:
+                        st.plotly_chart(px.pie(
+                            values=[results['characters'], results['pinyin']],
+                            names=["字符匹配", "拼音匹配"],
+                            title="综合匹配分析"
+                        ))
+
+                # 最终判定
+                if results['voice_sim'] >= 0.85 and results['characters'] >= 0.7:
+                    flag = hashlib.sha256(conv_path.encode()).hexdigest()[:16]
+                    st.success(f"✅ 验证成功! FLAG: CTF{{VoiceAuth_{flag}}}")
+                    st.balloons()
+                else:
+                    st.error("❌ 验证失败：未通过双重校验")
+                
+            except Exception as e:
+                st.error(f"系统错误: {str(e)}")
+            finally:
+                if os.path.exists(conv_path):
+                    os.remove(conv_path)

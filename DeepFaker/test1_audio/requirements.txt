@@ -1,0 +1,24 @@
+# requirements.txt
+# 生成日期：2025-03-18
+# 运行环境：Python 3.9-3.13
+
+# 核心框架
+streamlit==1.43.1  # 网页1/2/3/4均提及的Web框架
+
+# 语音处理
+torch==2.2.2  # PyTorch核心库
+torchaudio==2.2.2  # 音频处理（需与Torch版本匹配）
+pydub==0.25.1  # 网页5案例使用的音频格式转换工具
+openai-whisper==20231117  # 语音识别引擎
+speechbrain @ git+https://github.com/speechbrain/speechbrain  # 声纹识别模型库
+
+# 辅助工具
+pinyin-pro==3.2.0  # 拼音转换库（网页5扩展功能）
+plotly==5.18.0  # 可视化图表支持
+
+# 兼容性说明：
+# 1. 需预先安装FFmpeg（pydub依赖）：
+#    Linux: sudo apt install ffmpeg
+#    Windows: https://ffmpeg.org/download.html
+# 2. 推荐使用清华镜像加速安装：
+#    pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
