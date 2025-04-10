@@ -104,11 +104,11 @@ def transcribe_audio(audio_path):
 
 # 网页界面
 st.title("八卦宫语音验证 v1.0")
-TARGET_TEXT = "网络安全防护之语音验证 重于泰山"  # 固定验证文本
+TARGET_TEXT = "我乃无量仙翁 师弟别来无恙"  # 固定验证文本
 
 video_file = open('video/nezha2.mp4', 'rb')
 video_bytes = video_file.read()
-st.video(video_bytes, format="video/mp4", autoplay=True) 
+st.video(video_bytes, format="video/mp4") 
 
 # 素材下载区
 st.markdown("### 🎧 素材下载")
@@ -138,7 +138,7 @@ with col2:
 st.markdown(f"""
 <div style="background:#f0f2f6;padding:20px;border-radius:10px">
     <h4>🎯 验证目标要求</h4>
-    <p>1. 使用<b>仙翁声纹特征</b>录制语音（相似度≥85%）</p>
+    <p>1. 使用<b>仙翁声纹特征</b>录制语音（相似度≥阈值%）</p>
     <p>2. 清晰读出以下文本：<code>{TARGET_TEXT}</code>（匹配度≥70%）</p>
 </div>
 """, unsafe_allow_html=True)
@@ -193,8 +193,8 @@ with st.form("verify_form"):
             
             with rs_col1:
                 st.metric("声纹相似度", 
-                         f"{sim_score:.2%}",
-                         delta="≥85%" if sim_score >= 0.85 else None)
+                         f"{sim_score+(1-sim_score)*0.5:.2%}", #正则化声纹相似度
+                         delta="≥75%" if sim_score >= 0.5 else None)
                 
             with rs_col2:
                 st.metric("文本匹配度",
@@ -207,7 +207,7 @@ with st.form("verify_form"):
             st.caption(f"目标文本: {TARGET_TEXT}")
             
             # 最终判定
-            if sim_score >= 0.85 and text_match >= 0.7:
+            if sim_score >= 0.5 and text_match >= 0.7:
                 flag = hashlib.sha256(conv_path.encode()).hexdigest()[:16]
                 st.success(f"✅ 验证通过! FLAG: CTF{{VoiceAuth_{flag}}}")
                 st.balloons()

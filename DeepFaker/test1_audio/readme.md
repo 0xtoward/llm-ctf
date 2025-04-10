@@ -15,11 +15,12 @@
 
 ## 用法
 (推荐使用虚拟环境构建)
-pip install -r requirements.txt
+- 参考requirements.txt
+- conda install 'ffmpeg<5'
 
 (可先去test目录对模块进行测试)
-streamlit run ./test1_audio_st.py
+- streamlit run ./test1_audio_st.py
 
 (第一次启动时要加载模型 速度较慢)
-浏览器进入： http://localhost:8501/
+- 浏览器进入： http://localhost:8501/
 

@@ -1,4 +1,4 @@
-# speaker_verify.py
+#conda install 'ffmpeg<5'
 import torch
 import torchaudio
 from speechbrain.inference import EncoderClassifier
@@ -12,7 +12,8 @@ classifier = EncoderClassifier.from_hparams(
 # 2. 提取声纹特征
 def extract_embedding(audio_path):
     # 加载音频（保持原始声道）
-    signal, fs = torchaudio.load(audio_path)
+    format = audio_path.split(".")[-1] #傻逼torchaudio #conda install 'ffmpeg<5'
+    signal, fs = torchaudio.load(audio_path,format=format)
     
     # 声道转换（网页[3]的优化方案）
     if signal.shape[0] > 1:  # 多声道情况

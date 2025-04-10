@@ -1,24 +1,30 @@
-# requirements.txt
-# 生成日期：2025-03-18
-# 运行环境：Python 3.9-3.13
+# 核心深度学习框架
+torch==2.0.1+cpu --extra-index-url https://download.pytorch.org/whl/cpu
+torchaudio==2.0.2+cpu --extra-index-url https://download.pytorch.org/whl/cpu
+torchvision==0.15.2+cpu --extra-index-url https://download.pytorch.org/whl/cpu
 
-# 核心框架
-streamlit==1.43.1  # 网页1/2/3/4均提及的Web框架
+# 流式应用框架
+streamlit==1.35.0
 
-# 语音处理
-torch==2.2.2  # PyTorch核心库
-torchaudio==2.2.2  # 音频处理（需与Torch版本匹配）
-pydub==0.25.1  # 网页5案例使用的音频格式转换工具
-openai-whisper==20231117  # 语音识别引擎
-speechbrain @ git+https://github.com/speechbrain/speechbrain  # 声纹识别模型库
+# 音频处理组件
+pydub==0.25.1
+librosa==0.11.0
+soundfile==0.13.1
+openai-whisper==20240930
 
-# 辅助工具
-pinyin-pro==3.2.0  # 拼音转换库（网页5扩展功能）
-plotly==5.18.0  # 可视化图表支持
+# 语音识别框架
+speechbrain==1.0.2
+hyperpyyaml==1.2.2
 
-# 兼容性说明：
-# 1. 需预先安装FFmpeg（pydub依赖）：
-#    Linux: sudo apt install ffmpeg
-#    Windows: https://ffmpeg.org/download.html
-# 2. 推荐使用清华镜像加速安装：
-#    pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+# 数学计算库
+numpy==1.24.4
+scipy==1.15.2
+numba==0.61.0
+
+# 环境管理工具
+python-dotenv==1.0.0
+protobuf==4.25.6
+
+# 模型仓库支持
+huggingface-hub==0.16.4
+typing_extensions==4.12.2

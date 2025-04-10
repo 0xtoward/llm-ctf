@@ -1,0 +1,54 @@
+name: voice_verify
+channels:
+  - conda-forge
+  - pytorch
+  - defaults
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/  # 国内加速
+
+dependencies:
+  # 核心依赖
+  - python=3.10.13
+  - pytorch=2.0.1
+  - torchaudio=2.0.2
+  - cpuonly=2.0  # 明确指定CPU模式
+  
+  # 音频处理工具链
+  - ffmpeg=4.4.2
+  - libsndfile=1.2.2
+  - sox
+  - openh264=2.3.1
+  
+  # 数学计算库
+  - numpy=1.24.4
+  - scipy=1.15.2
+  - numba=0.61.0
+  - mkl=2022.1.0
+  
+  # 系统库依赖
+  - openssl=3.4.1
+  - libgcc-ng=14.2.0
+  - libstdcxx-ng=14.2.0
+  - libuuid=2.38.1
+  
+  # 前端依赖
+  - nodejs=18.12.1  # Streamlit前端可能需要
+  
+  # 其他必要依赖
+  - pip=25.0
+  - setuptools=75.8.0
+  - wheel=0.45.1
+  - typing_extensions=4.12.2
+  
+  # 通过pip安装的Python包
+  - pip:
+    - streamlit
+    - speechbrain==1.0.2
+    - librosa==0.11.0
+    - pydub==0.25.1
+    - openai-whisper==20240930
+    - soundfile==0.13.1
+    - torchvision==0.15.2  # 补充图像处理能力
+    - protobuf==4.25.6  # 修复可能的版本冲突
+    - hyperpyyaml==1.2.2
+    - huggingface-hub==0.16.4
+    - python-dotenv==1.0.0  # 环境变量管理
