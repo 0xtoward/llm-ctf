@@ -1,31 +1,33 @@
-# 核心深度学习框架
-torch==2.0.1+cpu --extra-index-url https://download.pytorch.org/whl/cpu
-torchaudio==2.0.2+cpu --extra-index-url https://download.pytorch.org/whl/cpu
-torchvision==0.15.2+cpu --extra-index-url https://download.pytorch.org/whl/cpu
-
-
-# 音频处理组件
-pydub==0.25.1
-librosa==0.11.0
-soundfile==0.13.1
-openai-whisper==20240930
-
-# 语音识别框架
-hyperpyyaml==1.2.2
-
-# 数学计算库
-numpy==1.24.4
-scipy==1.15.2
-numba==0.61.0
-
-# 环境管理工具
-python-dotenv==1.0.0
-protobuf==4.25.6
-
-# 模型仓库支持
-huggingface-hub==0.16.4
+# requirements.txt
+# 生成时间：2025-04-10
+# 核心依赖 (必须优先安装)
+numpy==1.24.4  # 严格锁定版本[6,8](@ref)
+protobuf==4.25.6  # 防止版本冲突[6](@ref)
 typing_extensions==4.12.2
+hyperpyyaml==1.2.2
+python-dotenv==1.0.0
 
-#最后再装 兼容性
-speechbrain
-streamlit
+# PyTorch生态链 (CPU专用版)
+torch==2.0.1+cpu  # PyPI官方CPU版本[5](@ref)
+torchaudio==2.0.2+cpu
+torchvision==0.15.2+cpu
+
+# 音频处理工具链
+speechbrain==1.0.2
+librosa==0.11.0  # 依赖numpy==1.24.x[5](@ref)
+pydub==0.25.1
+soundfile==0.13.1; sys_platform != 'win32'  # Linux/macOS专用[5](@ref)
+soundfile==0.13.1; sys_platform == 'win32' and platform_architecture != 'ARM64'
+
+# 语音识别
+openai-whisper  # 
+
+# 前端框架
+streamlit>=1.30,<2.0  # 兼容范围锁定[8](@ref)
+
+# 辅助工具
+huggingface-hub==0.16.4
+
+# 数学计算库 (严格匹配YML配置)
+scipy==1.15.2  # 依赖numpy==1.24.x[5](@ref)
+numba==0.61.0
