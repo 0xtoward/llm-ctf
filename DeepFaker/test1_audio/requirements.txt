@@ -1,33 +1,32 @@
 # requirements.txt
-# 生成时间：2025-04-10
-# 核心依赖 (必须优先安装)
-numpy==1.24.4  # 严格锁定版本[6,8](@ref)
-protobuf==4.25.6  # 防止版本冲突[6](@ref)
-typing_extensions==4.12.2
-hyperpyyaml==1.2.2
-python-dotenv==1.0.0
+# 核心框架
+streamlit==1.28.0  # 网页[1][4]推荐的稳定版本
+ffmpeg<5
 
-# PyTorch生态链 (CPU专用版)
-torch==2.0.1+cpu  # PyPI官方CPU版本[5](@ref)
-torchaudio==2.0.2+cpu
-torchvision==0.15.2+cpu
+# PyTorch生态
+torch==2.0.1+cpu  # CPU专用版本，避免CUDA依赖
+torchaudio==2.0.2+cpu  # 与PyTorch版本严格匹配
+numpy==1.24.4  # 强制锁定版本，防止自动升级到2.x[1](@ref)
 
-# 音频处理工具链
-speechbrain==1.0.2
-librosa==0.11.0  # 依赖numpy==1.24.x[5](@ref)
-pydub==0.25.1
-soundfile==0.13.1; sys_platform != 'win32'  # Linux/macOS专用[5](@ref)
-soundfile==0.13.1; sys_platform == 'win32' and platform_architecture != 'ARM64'
+# 音频处理
+pydub==0.25.1  # 音频格式转换核心库
+librosa==0.11.0  # 网页[6]提到的音频分析库
+soundfile==0.13.1; sys_platform != 'win32'  # Linux/macOS专用音频IO
 
 # 语音识别
-openai-whisper  # 
-
-# 前端框架
-streamlit>=1.30,<2.0  # 兼容范围锁定[8](@ref)
+openai-whisper==20240930  # 需指定2024年稳定版本
+speechbrain==1.0.2  # 声纹识别核心库
 
 # 辅助工具
-huggingface-hub==0.16.4
+protobuf==4.25.6  # 防止版本冲突的关键
+hyperpyyaml==1.2.2  # 配置文件解析库
+python-dotenv==1.0.0  # 环境变量管理
+difflib==0.0.1  # 内置库版本声明
 
-# 数学计算库 (严格匹配YML配置)
-scipy==1.15.2  # 依赖numpy==1.24.x[5](@ref)
-numba==0.61.0
+# 数学计算
+scipy==1.15.2  # 与numpy 1.24.x兼容版本
+numba==0.61.0  # JIT加速库
+
+# 系统依赖（需在部署环境手动安装）：
+# apt-get install -y ffmpeg libsndfile1 (Linux)
+# brew install ffmpeg libsndfile (macOS)
