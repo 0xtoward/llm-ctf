@@ -9,11 +9,20 @@ import whisper
 from speechbrain.inference import EncoderClassifier
 from difflib import SequenceMatcher
 
+
+
+# 获取当前脚本的绝对路径目录
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+print(f"当前脚本目录: {SCRIPT_DIR}")
+# 修改后的路径配置
+BASE_AUDIO_PATH = os.path.join(SCRIPT_DIR, "video", "仙翁纯享.mp3")
+TEMP_DIR = os.path.join(SCRIPT_DIR, "temp_uploads")
+VIDEO_PATH = os.path.join(SCRIPT_DIR, "video", "nezha2.mp4")
+os.makedirs(TEMP_DIR, exist_ok=True)
+
+
 # 安全配置
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
-TEMP_DIR = "./temp_uploads"
-BASE_AUDIO_PATH = "./video/仙翁纯享.mp3"
-os.makedirs(TEMP_DIR, exist_ok=True)
 
 # 初始化模型（带缓存）
 @st.cache_resource
@@ -106,7 +115,7 @@ def transcribe_audio(audio_path):
 st.title("八卦宫语音验证 v1.0")
 TARGET_TEXT = "我乃无量仙翁 师弟别来无恙"  # 固定验证文本
 
-video_file = open('video/nezha2.mp4', 'rb')
+video_file = open(VIDEO_PATH, 'rb')
 video_bytes = video_file.read()
 st.video(video_bytes, format="video/mp4") 
 
@@ -115,7 +124,7 @@ st.markdown("### 🎧 素材下载")
 col1, col2 = st.columns(2)
 
 with col1:
-    with open("./video/nezha2.mp4", "rb") as f:
+    with open(VIDEO_PATH, "rb") as f:
         st.download_button(
             label="下载哪吒素材",
             data=f,
@@ -125,7 +134,7 @@ with col1:
         )
 
 with col2:
-    with open("./video/仙翁纯享.mp3", "rb") as f:
+    with open(BASE_AUDIO_PATH, "rb") as f:
         st.download_button(
             label="下载基准音频",
             data=f,
